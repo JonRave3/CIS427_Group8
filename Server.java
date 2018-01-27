@@ -28,7 +28,8 @@ public class Server {
         } else {
             System.exit(1);
         }
-    } 
+    }//end of main()
+
     private static boolean Init(){
         try{
             //instantiate objects for use;
@@ -40,15 +41,14 @@ public class Server {
             sender = new PrintStream(server.getOutputStream());
             //read the file into memory
             fReader = new FileReader(dataFile);
-            
             ReadDataFromFile();
-            
             return true;
+            
         } catch (IOException ioe){
             System.err.println("Unable to build server-socket: \n" + ioe);
             return false;
         }
-    }
+    }//end of Init()
 
     private static int FindMaxRecordId(){
         //if the list is not empty
@@ -65,17 +65,21 @@ public class Server {
             return 1000;
         }
 
-    }
+    }//end of FindMaxRecodId()
+
     private static void ReadDataFromFile(){
         //get each line from the file
         //parse each line for tokens
         //store in list
         //find the max record ID
         maxRecordId = FindMaxRecordId();
-    }
-    private static void WriteDateToFile(){
+    }//end of ReadDataFromFile()
 
-    }
+    private static void WriteDataToFile(){
+        //open the File connection
+        //overwrite the file
+        //close the file connection
+    }//end of WriteDataToFile() 
 
     private static void Run(){
         
@@ -100,29 +104,36 @@ public class Server {
         } finally {
             ShutDown();
         }
-    }
+    }//end of Run()
 
     private static void ShutDown() {
         //output list to file
-        WriteDateToFile();
+        WriteDataToFile();
         //close connections
         sender.close();
         reader.close();
         server.close();           
-    }
+    }//end of ShutDown()
+
     private static void Add(String fname, String lname, String phone){
         maxRecordId++;
         Record r = new Record(maxRecordId);
         r._firstname = fname;
         r._lastname = lname;
         r._phone = phone;
-    }
-    private static void Delete(int id) {
+        //sends a response to the Client
+    }//end of Add()
 
-    }
+    private static void Delete(int id) {
+        //find the record in the list
+        //remove the record from the list
+        //send a response to client
+    }//end of Delete()
+
     private static void List() {
-        
-    }
+        //send each record back the client as a response
+    }//end of List()
+
     private class Record {
         public String _firstname, _lastname, _phone;
         private final int _recordId;
@@ -136,5 +147,5 @@ public class Server {
         public String ToString(){
             return String.format("%d\t%s %s\t%s", getRecordId(), _firstname, _lastname, _phone);
         }
-    }
+    }//end of Record class
 }
