@@ -10,7 +10,7 @@ import java.util.*;
 public class Server {
 
     private static final int SERVER_PORT = 6833;
-    private static final ArrayList<Record> list;
+    private static ArrayList<Record> list;
     private static final String dataFile = "data.txt";
     private static int maxRecordId;
     private static FileReader fReader;
@@ -28,6 +28,7 @@ public class Server {
         } else {
             System.exit(1);
         }
+        return 0;
     }//end of main()
 
     private static boolean Init(){
@@ -41,6 +42,7 @@ public class Server {
             sender = new PrintStream(client.getOutputStream());
             //read the file into memory
             fReader = new FileReader(dataFile);
+            list = new ArrayList<Record>();
             ReadDataFromFile();
             return true;
 
@@ -70,6 +72,7 @@ public class Server {
     private static void ReadDataFromFile(){
         //get each line from the file
         //parse each line for tokens
+
         //store in list
         //find the max record ID
         maxRecordId = FindMaxRecordId();
@@ -86,7 +89,7 @@ public class Server {
         try {
             while((line = reader.readLine()) != null){
                 //parse string
-                String cmds = line.split('\s+');
+                String cmds[] = line.split("\\s+");
                 switch(cmds[0]){
                     case "add" :  break;
                     case "delete" : break;
@@ -110,9 +113,13 @@ public class Server {
         //output list to file
         WriteDataToFile();
         //close connections
-        sender.close();
-        reader.close();
-        server.close();           
+        try{
+            sender.close();
+            reader.close();
+            server.close();               
+        } catch (Exception e) {
+            System.err.println("Ayyy you fucked up!");
+        }
     }//end of ShutDown()
 
     private static void Add(String fname, String lname, String phone){
