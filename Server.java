@@ -26,6 +26,11 @@ public class Server {
     private static boolean Init(){
         try{
             server = new ServerSocket(SERVER_PORT);
+            client = server.accept();
+            reader = new BufferedReader(
+                new InputStreamReader(server.getInputStream())
+            );
+            sender = new PrintStream(server.getOutputStream());
             return true;
         } catch (IOException ioe){
             System.err.println("Unable to build server-socket: \n" + ioe);
@@ -34,11 +39,28 @@ public class Server {
     }
 
     private static void Run(){
-        while(true){
-            try {
-                
+        
+        try {
+            while((line = reader.readLine()) != null){
+                System.out.println(line);
+                sender.println(line);
             }
+        } catch(IOException ioe) {
+            System.err.println("IO Exception encountered reading/sending input from the client.");
+        } catch (Exception e) {
+            System.err.println("An unexpected error has occurred.");
+        } finally {
+            ShutDown();
         }
+    }
+
+    private static void ShutDown() {
+        //output list to file
+
+        //close connections
+        sender.close();
+        reader.close();
+        server.close();           
     }
 
 }
