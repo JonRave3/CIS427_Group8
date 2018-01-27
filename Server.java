@@ -36,14 +36,14 @@ public class Server {
             server = new ServerSocket(SERVER_PORT);
             client = server.accept();
             reader = new BufferedReader(
-                new InputStreamReader(server.getInputStream())
+                new InputStreamReader(client.getInputStream())
             );
-            sender = new PrintStream(server.getOutputStream());
+            sender = new PrintStream(client.getOutputStream());
             //read the file into memory
             fReader = new FileReader(dataFile);
             ReadDataFromFile();
             return true;
-            
+
         } catch (IOException ioe){
             System.err.println("Unable to build server-socket: \n" + ioe);
             return false;
@@ -54,7 +54,7 @@ public class Server {
         //if the list is not empty
         if(list != null && !list.isEmpty()){
             int max = 0;
-            foreach(Record r : list){
+            for(Record r : list){
                 if(r._recordId > max){
                     max = r._recordId;
                 }
@@ -86,8 +86,8 @@ public class Server {
         try {
             while((line = reader.readLine()) != null){
                 //parse string
-                String cmd = line[0];
-                switch(cmd){
+                String cmds = line.split('\s+');
+                switch(cmds[0]){
                     case "add" :  break;
                     case "delete" : break;
                     case "list" : break;
@@ -134,7 +134,7 @@ public class Server {
         //send each record back the client as a response
     }//end of List()
 
-    private class Record {
+    private static class Record {
         public String _firstname, _lastname, _phone;
         private final int _recordId;
 
