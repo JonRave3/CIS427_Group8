@@ -56,8 +56,13 @@ public class Client
 		    os.println(userInput);
 		    serverInput = is.readLine();
 		    System.out.println("Echo:" + serverInput);
-                    //code goes here hahahahaha
-		}
+                    if(userInput.contains("QUIT")){
+                        os.close();
+                        is.close();
+                        clientSocket.close(); 
+                    }//END QUIT
+                    
+                }
 
 		// close the input and output stream
 		// close the socket
