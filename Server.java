@@ -4,6 +4,7 @@ CIS427 Project1
 */
 
 import java.net.*;
+import java.nio.*;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.io.*;
@@ -26,7 +27,6 @@ public class Server {
     public static void main(String cmds[]){
         Write("heyo! We started!");
         if(Init()){
-        
             Run();
         } else {
             System.exit(1);
@@ -38,8 +38,8 @@ public class Server {
         //instantiate objects for use;
         try{    
             //read the file into memory
-            fReader = new FileReader(dataFile);
             list = new ArrayList<Record>();
+            fReader = new FileReader(dataFile);
             ReadDataFromFile();
             server = new ServerSocket(SERVER_PORT);
             return true; 
@@ -71,12 +71,12 @@ public class Server {
     private static void ReadDataFromFile(){
         Write("Attempting to retrieve records from file...");
         //get each line from the file
-        if(Files.exists(dataFile, LinkOption.NOFOLLOW_LINKS)){
+        BufferedReader bReader = new BufferedReader(fReader);
+        if (bReader != null) {
             Write("data file found!");
             try {
-                BufferedReader fileReader = Files.newBufferedReader(dataFile);
                 String ln = null;
-                while((ln = fileReader.readLine()) != null){
+                while((ln = bReader.readLine()) != null){
                     //parse each line for tokenss
                     String tkns[] = ln.split("\\s+");
                     //store in list
@@ -89,7 +89,7 @@ public class Server {
             } catch (IOException ioe){
                 Write("Error reading from data file!");
             } catch (NumberFormatException nfe){
-                Write("unable to get record id from file for " + ln);
+                Write("unable to get record id from file");
             }
         } else {
             Write("Data file not found!");
