@@ -8,7 +8,7 @@ import java.net.*;
 public class Client 
 {
     public static final int SERVER_PORT = 6833;
-    
+
     public static void main(String[] commands) 
     {
 	Socket clientSocket = null;  
@@ -17,7 +17,9 @@ public class Client
 	String userInput = null;
 	String serverInput = null;
 	BufferedReader stdInput = null;
-
+        OutputStreamWriter osw = new OutputStreamWriter(os);
+        BufferedWriter bw = new BufferedWriter(osw);
+ 
 	//Check the number of command line parameters
 	if (commands.length < 1)
 	{
@@ -32,7 +34,7 @@ public class Client
 	    clientSocket = new Socket(commands[0], SERVER_PORT);
 	    os = new PrintStream(clientSocket.getOutputStream());
 	    is = new BufferedReader (
-		new InputStreamReader(clientSocket.getInputStream()));
+	new InputStreamReader(clientSocket.getInputStream()));
 	    stdInput = new BufferedReader(new InputStreamReader(System.in));
 	} 
 	catch (UnknownHostException e) 
@@ -56,22 +58,42 @@ public class Client
 		    os.println(userInput);
 		    serverInput = is.readLine();
 		    System.out.println("Echo:" + serverInput);
-<<<<<<< HEAD
-                    if(userInput.contains("QUIT")){
+                    
+                    if(userInput.equalsIgnoreCase("QUIT")){
                         os.close();
                         is.close();
                         clientSocket.close(); 
                     }//END QUIT
-                  if(userInput.contains("ADD")){
-                      
-                  }// END ADD
                     
-                }
-=======
-                    //code goes here hahahahaha
-		}
-
->>>>>>> parent of 1e1bc43... redid shit
+                    if(userInput.contains("ADD")){
+                    String[] H8Life = userInput.split("\\s+");
+                    if(H8Life[1].length()<9 && H8Life[2].length()<9 && H8Life[3].length()<12){
+                    bw.write(userInput);
+                    bw.flush();
+                    }
+                    else{System.out.println("Incorrect syntax");}
+                    }// END ADD
+               
+                    if(userInput.contains("DELETE")){
+                    String[] H8Life = userInput.split("\\s+");
+                    if(H8Life[1].length()<5){
+                    bw.write(userInput);
+                    bw.flush();
+                    }
+                    else{System.out.println("Incorrect syntax");}
+                    }// END DELETE
+                        
+                    if(userInput.equalsIgnoreCase("LIST")){
+                    bw.write("LIST");
+                    bw.flush();
+                    }// END LIST
+                    
+                     if(userInput.contains("SHUTDOWN")){
+                    bw.write("SHUTDOWN");
+                    bw.flush();
+                    }// END SHUTDOWN
+                     
+                }// END WHILE
 		// close the input and output stream
 		// close the socket
 
