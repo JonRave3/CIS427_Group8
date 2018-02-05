@@ -95,10 +95,6 @@ public class Server {
         } else {
             Write("Data file not found!");
         }
-        //close the file
-        bReader.flush();
-        fReader.close();
-    
         //find the max record ID
         maxRecordId = FindMaxRecordId();
     }//end of ReadDataFromFile()
