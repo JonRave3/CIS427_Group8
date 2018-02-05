@@ -8,7 +8,7 @@ import java.net.*;
 public class Client 
 {
     public static final int SERVER_PORT = 6833;
-
+    
     public static void main(String[] commands) 
     {
 	Socket clientSocket = null;  
@@ -61,9 +61,11 @@ public class Client
                         is.close();
                         clientSocket.close(); 
                     }//END QUIT
+                  if(userInput.contains("ADD")){
+                      
+                  }// END ADD
                     
                 }
-
 		// close the input and output stream
 		// close the socket
 
