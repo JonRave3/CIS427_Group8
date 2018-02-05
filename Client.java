@@ -56,6 +56,7 @@ public class Client
 		    os.println(userInput);
 		    serverInput = is.readLine();
 		    System.out.println("Echo:" + serverInput);
+<<<<<<< HEAD
                     if(userInput.contains("QUIT")){
                         os.close();
                         is.close();
@@ -66,6 +67,11 @@ public class Client
                   }// END ADD
                     
                 }
+=======
+                    //code goes here hahahahaha
+		}
+
+>>>>>>> parent of 1e1bc43... redid shit
 		// close the input and output stream
 		// close the socket
 
