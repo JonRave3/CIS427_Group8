@@ -39,8 +39,10 @@ public class Client
 		try 
 		{
 			// Try to open a socket 
-			clientSocket = new Socket(ip, CLIENT_PORT);
+			Write("Attempting to connect to server socket...");
+			clientSocket = new Socket(ip, SERVER_PORT);
 			// Try to open input and output streams
+			Write("Attempting to get input and output streams...");
 			is = new BufferedReader (new InputStreamReader(clientSocket.getInputStream()));
 			stdInput = new BufferedReader(new InputStreamReader(System.in));
 			
@@ -70,6 +72,7 @@ public class Client
 						//ADD FNAME(8) LNAME(8) PHONE(12)\n
 						if(checkAdd(userInput)){
 							sendCommand(userInput);
+							getResponse();
 						} else {
 							Write("Invalid Add command. Please try again.");
 						}
@@ -78,6 +81,7 @@ public class Client
 					else if(userInput.contains("DELETE")) {
 						if(checkDelete(userInput)){
 							sendCommand(userInput);
+							getResponse();
 						} else {
 							Write("Invalid Delete command. Please try again");
 						}
@@ -86,6 +90,7 @@ public class Client
 						
 					else if(userInput.equalsIgnoreCase("LIST")) {
 						sendCommand(userInput);
+						getResponse();
 					}// END LIST
 					else if(userInput.equalsIgnoreCase("QUIT")) {
 						end();
@@ -114,6 +119,9 @@ public class Client
 			return false;
 		}
 	}//end of sendCommand()
+	private static void getResponse(){
+
+	}
 	private static boolean checkAdd(String cmd){
 		boolean valid = false;
 		String[] args = cmd.split("\\s+");

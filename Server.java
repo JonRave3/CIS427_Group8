@@ -28,7 +28,7 @@ public class Server {
     public static void main(String cmds[]){
         Write("heyo! We started!");
         if(Init()){
-            Write("Finished initializing!");
+            Write("Initialized Server!");
             Run();
         } else {
             System.exit(1);
@@ -69,8 +69,7 @@ public class Server {
         }
 
     }//end of FindMaxRecodId()
-
-    
+   
     private static void ReadDataFromFile(){
         Write("Attempting to retrieve records from file...");
         //get each line from the file
