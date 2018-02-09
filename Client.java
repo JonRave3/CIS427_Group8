@@ -18,19 +18,22 @@ public class Client
     {
 		String userInput = null;
 		String serverInput = null;
- 
+		Console console = System.console();
 		//Check the number of command line parameters
-		if (commands.length > 0 && init(commands[0]);)
+		if (commands.length > 0 && init(commands[0]))
 		{
 			run();
-
+			userInput =  console.readLine();
 		} else {
+			System.out.println("Unable to initialize client. Exiting...");
+			userInput = console.readLine();	
 			System.exit(1);
 		}
 	}//end of main()
 
-	private static void init(String ip) {
-		boolean status = false
+	private static boolean init(String ip) {
+		boolean status = false;
+		System.out.println("Attempting to initialize client...");
 		try 
 		{
 			// Try to open a socket on SERVER_PORT
@@ -57,6 +60,7 @@ public class Client
 	
 	private static void run(){
 		try {
+			String userInput;
 			while ((userInput = stdInput.readLine()) != null)
 			{
 				if(userInput.contains("ADD")) {
@@ -96,19 +100,21 @@ public class Client
 		}
 
 	}//end of run()
-	private static boolean sendCommand(String validCmd){
+	private static boolean sendCommand(String validCmd) {
 		try {
-			bw.write(userInput);
+			bw.write(validCmd);
+			return true;
 		} catch (Exception e){
 			System.err.println("Error: " + e);
+			return false;
 		}
 	}//end of sendCommand()
 	private static boolean checkAdd(String cmd){
 		boolean valid = false;
 		String[] args = cmd.split("\\s+");
 		//arg[0] == ADD
-		if(arg[0].compareToIgnoreCase("ADD"))
-		if(args[1] != null && args[2] != null &&  args[3] != null){
+		if(args[0].equalsIgnoreCase("ADD"))
+		if(args.length == 4 && args[1] != null && args[2] != null &&  args[3] != null){
 			String fname = args[1];
 			String lname = args[2];
 			String phone = args[3];
@@ -123,8 +129,8 @@ public class Client
 	private static boolean checkDelete(String cmd){
 		boolean valid = false;
 		String[] args = cmd.split("\\s+");
-		if(args[0].compareToIgnoreCase("DELETE"){
-			if(args[1] != null && args[1].length() == 4) {
+		if(args[0].equalsIgnoreCase("DELETE")){
+			if(args.length == 2 && args[1] != null && args[1].length() == 4) {
 				try{
 					int recordId = Integer.parseInt(args[1]);
 					valid = true;
@@ -137,11 +143,15 @@ public class Client
 	}//end of checkDelete()
 
 	private static void end(){
-		os.close();
-		is.close();
-		clientSocket.close();   
+		try {
+			os.close();
+			is.close();
+			clientSocket.close();   	
+		 } catch(Exception e){
+			 //Do nothing
+		 }
 	}
-	private static boolean quit(){}//end of quit()
+	private static boolean quit(){ return true;}//end of quit()
 	private static void shutdown(){}//end of shutdown()
 	
 }
