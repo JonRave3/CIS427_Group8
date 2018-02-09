@@ -63,7 +63,8 @@ public class Client
 	}//end of init()
 	
 	private static void run(){
-		while(true){
+		boolean end = false;
+		while(end != true){
 			try {
 				String userInput;
 				while ((userInput = ReadInput()) != null)
@@ -94,17 +95,21 @@ public class Client
 					}// END LIST
 					else if(userInput.equalsIgnoreCase("QUIT")) {
 						end();
+						end = true;
 					}//END QUIT
 					else if(userInput.equalsIgnoreCase("SHUTDOWN")) {
 						sendCommand(userInput);
+						end();
+						end = true;
 					}// END SHUTDOWN
 					
 				}// END WHILE
-				end();
 			} 
 			catch (Exception e) 
 			{
 				Write("Exception:  " + e);
+				end();
+				end = true;
 			}
 		}//END WHILE
 		
@@ -120,8 +125,17 @@ public class Client
 		}
 	}//end of sendCommand()
 	private static void getResponse(){
+		String responseLine = "";
+		try{
+			while((responseLine = is.readLine()) != null){
+				Write(responseLine);
+			}
+		} catch(Exception e){
 
-	}
+		}
+		
+	}//end of getResponse()
+
 	private static boolean checkAdd(String cmd){
 		boolean valid = false;
 		String[] args = cmd.split("\\s+");

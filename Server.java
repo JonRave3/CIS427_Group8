@@ -10,6 +10,7 @@ import java.nio.file.LinkOption;
 import java.io.*;
 import java.util.*;
 
+
 public class Server {
 
     private static final int SERVER_PORT = 6833;
@@ -112,29 +113,31 @@ public class Server {
             try {
                 Write("Waiting for a connection from client(s)...");
                 client = server.accept();
-                reader = new BufferedReader(
-                    new InputStreamReader(client.getInputStream())
-                );
-                sender = new PrintStream(client.getOutputStream());
-                Write("Connected to client! Waiting for commands!");
-                while((line = reader.readLine()) != null){
-                    //parse string
-                    String cmds[] = line.split("\\s+");
-                    switch(cmds[0]){
-                        case "add":  
-                            Add(cmds[1], cmds[2], cmds[3]);
-                            break;
-                        case "delete": 
-                            Delete(cmds[1]);
-                            break;
-                        case "list":
-                            break;
-                        case "shutdown": 
-                            Respond("Shutting down the server");
-                            ShutDown(); 
-                            break;
-                        default: 
-                            break;
+                if(client != null){
+                    reader = new BufferedReader(
+                        new InputStreamReader(client.getInputStream())
+                    );
+                    sender = new PrintStream(client.getOutputStream());
+                    Write("Connected to client! Waiting for commands!");
+                    while((line = reader.readLine()) != null){
+                        Write("Received request from client: " + line);
+                        String cmds[] = line.split("\\s+");
+                        switch(cmds[0]){
+                            case "add":  
+                                Add(cmds[1], cmds[2], cmds[3]);
+                                break;
+                            case "delete": 
+                                Delete(cmds[1]);
+                                break;
+                            case "list":
+                                break;
+                            case "shutdown": 
+                                Respond("Shutting down the server");
+                                ShutDown(); 
+                                break;
+                            default: 
+                                break;
+                        }
                     }
                 }
             } catch (IOException ioe) {
