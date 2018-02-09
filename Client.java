@@ -7,37 +7,39 @@ import java.net.*;
 
 public class Client 
 {
-    public static final int SERVER_PORT = 6833;
+	public static final int SERVER_PORT = 6833;
+	private static final int CLIENT_PORT = 7900;
 	public static Socket clientSocket;
 	public static PrintStream os;
 	public static BufferedReader is, stdInput;
 	public static OutputStreamWriter osw;
 	public static BufferedWriter bw;
-
+	public static Console console;
 	public static void main(String[] commands) 
     {
 		String userInput = null;
 		String serverInput = null;
-		Console console = System.console();
 		//Check the number of command line parameters
 		if (commands.length > 0 && init(commands[0]))
 		{
+			Write("Initialized Client!");
 			run();
-			userInput =  console.readLine();
+			userInput =  ReadInput();
 		} else {
-			System.out.println("Unable to initialize client. Exiting...");
-			userInput = console.readLine();	
+			Write("Unable to initialize client. Exiting...");
+			userInput = ReadInput();	
 			System.exit(1);
 		}
 	}//end of main()
 
 	private static boolean init(String ip) {
 		boolean status = false;
-		System.out.println("Attempting to initialize client...");
+		Write("Attempting to initialize client...");
+		console = System.console();
 		try 
 		{
-			// Try to open a socket on SERVER_PORT
-			clientSocket = new Socket(ip, SERVER_PORT);
+			// Try to open a socket 
+			clientSocket = new Socket(ip, CLIENT_PORT);
 			// Try to open input and output streams
 			is = new BufferedReader (new InputStreamReader(clientSocket.getInputStream()));
 			stdInput = new BufferedReader(new InputStreamReader(System.in));
@@ -49,55 +51,58 @@ public class Client
 		} 
 		catch (UnknownHostException e) 
 		{
-			System.err.println("Don't know about host: hostname");
+			Write("Unable to create socket on host: " + ip);
 		} 
 		catch (IOException e) 
 		{
-			System.err.println("Couldn't get I/O for the connection to: hostname");
+			Write("Couldn't get I/O for the connection to: " + ip);
 		}
 		return status;
 	}//end of init()
 	
 	private static void run(){
-		try {
-			String userInput;
-			while ((userInput = stdInput.readLine()) != null)
+		while(true){
+			try {
+				String userInput;
+				while ((userInput = ReadInput()) != null)
+				{
+					if(userInput.contains("ADD")) {
+						//ADD FNAME(8) LNAME(8) PHONE(12)\n
+						if(checkAdd(userInput)){
+							sendCommand(userInput);
+						} else {
+							Write("Invalid Add command. Please try again.");
+						}
+					}
+			
+					else if(userInput.contains("DELETE")) {
+						if(checkDelete(userInput)){
+							sendCommand(userInput);
+						} else {
+							Write("Invalid Delete command. Please try again");
+						}
+						
+					}
+						
+					else if(userInput.equalsIgnoreCase("LIST")) {
+						sendCommand(userInput);
+					}// END LIST
+					else if(userInput.equalsIgnoreCase("QUIT")) {
+						end();
+					}//END QUIT
+					else if(userInput.equalsIgnoreCase("SHUTDOWN")) {
+						sendCommand(userInput);
+					}// END SHUTDOWN
+					
+				}// END WHILE
+				end();
+			} 
+			catch (Exception e) 
 			{
-				if(userInput.contains("ADD")) {
-					//ADD FNAME(8) LNAME(8) PHONE(12)\n
-					if(checkAdd(userInput)){
-						sendCommand(userInput);
-					} else {
-						System.out.println("Invalid Add command. Please try again.");
-					}
-				}
+				Write("Exception:  " + e);
+			}
+		}//END WHILE
 		
-				else if(userInput.contains("DELETE")) {
-					if(checkDelete(userInput)){
-						sendCommand(userInput);
-					} else {
-						System.out.println("Invalid Delete command. Please try again");
-					}
-					
-				}
-					
-				else if(userInput.equalsIgnoreCase("LIST")) {
-					sendCommand(userInput);
-				}// END LIST
-				else if(userInput.equalsIgnoreCase("QUIT")) {
-					end();
-				}//END QUIT
-				else if(userInput.equalsIgnoreCase("SHUTDOWN")) {
-					sendCommand(userInput);
-				}// END SHUTDOWN
-				
-			}// END WHILE
-			end();
-		} 
-		catch (IOException e) 
-		{
-			System.err.println("IOException:  " + e);
-		}
 
 	}//end of run()
 	private static boolean sendCommand(String validCmd) {
@@ -105,7 +110,7 @@ public class Client
 			bw.write(validCmd);
 			return true;
 		} catch (Exception e){
-			System.err.println("Error: " + e);
+			Write("Error: " + e);
 			return false;
 		}
 	}//end of sendCommand()
@@ -135,7 +140,7 @@ public class Client
 					int recordId = Integer.parseInt(args[1]);
 					valid = true;
 				} catch (Exception e){
-					System.out.println("Invalid record id.");
+					Write("Invalid record id.");
 				}
 			}
 		}
@@ -153,5 +158,17 @@ public class Client
 	}
 	private static boolean quit(){ return true;}//end of quit()
 	private static void shutdown(){}//end of shutdown()
-	
+
+	private static void Write(String msg){
+		System.out.println(msg);
+	}
+	private static String ReadInput(){
+		String input = "";
+		try{
+			input = console.readLine();
+		} catch (Exception e){
+
+		}
+		return input; 
+	}
 }
