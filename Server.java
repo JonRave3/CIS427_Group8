@@ -27,6 +27,7 @@ public class Server {
     public static void main(String cmds[]){
         Write("heyo! We started!");
         if(Init()){
+            Write("Finished initializing!");
             Run();
         } else {
             System.exit(1);
