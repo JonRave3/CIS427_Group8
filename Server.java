@@ -13,6 +13,7 @@ import java.util.*;
 public class Server {
 
     private static final int SERVER_PORT = 6833;
+    private static final int CLIENT_PORT = 7900;
     private static ArrayList<Record> list;
     private static final String dataFile = "data.txt";
     private static int maxRecordId;
