@@ -112,41 +112,41 @@ public class Server {
         while(true){
             try {
                 Write("Waiting for a connection from client(s)...");
-                client = server.accept();
-                if(client != null){
+                if(client == null || !client.isConnected()) {
+                    client = server.accept();
                     reader = new BufferedReader(
                         new InputStreamReader(client.getInputStream())
                     );
                     sender = new PrintStream(client.getOutputStream());
+                }
+                else if(!client.isClosed()){
+                    
                     Write("Connected to client! Waiting for commands!");
                     while((line = reader.readLine()) != null){
+
                         Write("Received request from client: " + line);
                         String cmds[] = line.split("\\s+");
-                        switch(cmds[0]){
-                            case "add":  
+                        switch(cmds[0].toUpperCase()){
+                            case "ADD":  
                                 Add(cmds[1], cmds[2], cmds[3]);
                                 break;
-                            case "delete": 
+                            case "DELETE": 
                                 Delete(cmds[1]);
                                 break;
-                            case "list":
+                            case "LIST":
+                                List();
                                 break;
-                            case "shutdown": 
+                            case "SHUTDOWN": 
                                 Respond("Shutting down the server");
                                 ShutDown(); 
                                 break;
-                            default: 
-                                break;
+                            default: break;
                         }
                     }
                 }
-            } catch (IOException ioe) {
-                System.err.println("IO Exception encountered reading/sending input from the client.");
             } catch (Exception e) {
                 System.err.println("An unexpected error has occurred.");
-            } finally {
-                ShutDown();
-            }
+            } 
         }
         
     }//end of Run()
@@ -165,13 +165,20 @@ public class Server {
     }//end of ShutDown()
 
     private static void Add(String fname, String lname, String phone){
+        Write("Adding new record.");
         maxRecordId++;
         Record r = new Record(maxRecordId);
         r._firstname = fname;
         r._lastname = lname;
         r._phone = phone;
+        if(!list.contains(r)){
+            list.add(r);
+            Respond("200 OK");        
+        }
+        else {
+            Respond("400 BAD REQUEST");
+        }
         //sends a response to the Client
-        Respond("200 OK");
     }//end of Add()
 
     private static void Delete(String id) {
@@ -204,6 +211,6 @@ public class Server {
     }//end of Write()
 
     private static void Respond(String msg) {
-        sender.println(line);
+        sender.println(msg);
     }//end of Respond()
 }

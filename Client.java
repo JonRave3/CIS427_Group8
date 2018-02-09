@@ -10,11 +10,10 @@ public class Client
 	public static final int SERVER_PORT = 6833;
 	private static final int CLIENT_PORT = 7900;
 	public static Socket clientSocket;
-	public static PrintStream os;
-	public static BufferedReader is, stdInput;
-	public static OutputStreamWriter osw;
-	public static BufferedWriter bw;
+	public static BufferedReader listener;
+	public static PrintStream sender;
 	public static Console console;
+	
 	public static void main(String[] commands) 
     {
 		String userInput = null;
@@ -24,7 +23,7 @@ public class Client
 		{
 			Write("Initialized Client!");
 			run();
-			userInput =  ReadInput();
+			userInput = ReadInput();
 		} else {
 			Write("Unable to initialize client. Exiting...");
 			userInput = ReadInput();	
@@ -40,15 +39,12 @@ public class Client
 		{
 			// Try to open a socket 
 			Write("Attempting to connect to server socket...");
-			clientSocket = new Socket(ip, SERVER_PORT);
+			//clientSocket = new Socket(ip, SERVER_PORT);
+			clientSocket = new Socket("127.0.0.1", SERVER_PORT);
 			// Try to open input and output streams
 			Write("Attempting to get input and output streams...");
-			is = new BufferedReader (new InputStreamReader(clientSocket.getInputStream()));
-			stdInput = new BufferedReader(new InputStreamReader(System.in));
-			
-			os = new PrintStream(clientSocket.getOutputStream());
-			osw = new OutputStreamWriter(os);
-			bw = new BufferedWriter(osw);
+			listener = new BufferedReader (new InputStreamReader(clientSocket.getInputStream()));
+			sender = new PrintStream(clientSocket.getOutputStream());
 			status = true;
 		} 
 		catch (UnknownHostException e) 
@@ -65,70 +61,73 @@ public class Client
 	private static void run(){
 		boolean end = false;
 		while(end != true){
+
 			try {
 				String userInput = ReadInput();
 
 				Write("Received input from user: " + userInput);
-					if(userInput.contains("ADD")) {
-						//ADD FNAME(8) LNAME(8) PHONE(12)\n
-						if(checkAdd(userInput)){
-							Write("ADD cmd is valid!");
-							sendCommand(userInput);
+				if(userInput.toUpperCase().contains("ADD")) {
+					//ADD FNAME(8) LNAME(8) PHONE(12)\n
+					if(checkAdd(userInput)){
+						Write("ADD cmd is valid!");
+						if(sendCommand(userInput)){
 							getResponse();
-						} else {
-							Write("Invalid Add command. Please try again.");
 						}
+					} else {
+						Write("Invalid Add command. Please try again.");
 					}
-			
-					else if(userInput.contains("DELETE")) {
-						if(checkDelete(userInput)){
-							Write("DELETE cmd is valid!");
-							sendCommand(userInput);
+				}//END ADD
+				else if(userInput.toUpperCase().contains("DELETE")) {
+					if(checkDelete(userInput)){
+						Write("DELETE cmd is valid!");
+						if(sendCommand(userInput)){
 							getResponse();
-						} else {
-							Write("Invalid Delete command. Please try again");
 						}
-						
+					} else {
+						Write("Invalid Delete command. Please try again");
 					}
-						
-					else if(userInput.equalsIgnoreCase("LIST")) {
-						sendCommand(userInput);
+					
+				}//END DELETE
+				else if(userInput.toUpperCase().equalsIgnoreCase("LIST")) {
+					if(sendCommand(userInput)){
 						getResponse();
-					}// END LIST
-					else if(userInput.equalsIgnoreCase("QUIT")) {
-						end();
-						end = true;
-					}//END QUIT
-					else if(userInput.equalsIgnoreCase("SHUTDOWN")) {
-						sendCommand(userInput);
-						end();
-						end = true;
-					}// END SHUTDOWN
+					}
+				}// END LIST
+				else if(userInput.toUpperCase().equalsIgnoreCase("QUIT")) {
+					end();
+					end = true;
+				}//END QUIT
+				else if(userInput.toUpperCase().equalsIgnoreCase("SHUTDOWN")) {
+					sendCommand(userInput);
+					end();
+					end = true;
+				}// END SHUTDOWN
 			} 
 			catch (Exception e) 
 			{
-				Write("Exception:  " + e);
-				end();
-				end = true;
+				// Write("Exception:  " + e);
+				// end();
+				// end = true;
 			}
 		}//END WHILE
-		
-
 	}//end of run()
+
 	private static boolean sendCommand(String validCmd) {
 		Write("Sending cmd to server.");
 		try {
-			bw.write(validCmd);
+			sender.println(validCmd);
 			return true;
 		} catch (Exception e){
 			Write("Error: " + e);
 			return false;
 		}
 	}//end of sendCommand()
+
 	private static void getResponse(){
+		Write("Awaiting response from server...");
 		String responseLine = "";
 		try{
-			while((responseLine = is.readLine()) != null){
+			while((responseLine = listener.readLine()) != null){
 				Write(responseLine);
 			}
 		} catch(Exception e){
@@ -155,6 +154,7 @@ public class Client
 		}
 		return valid;
 	}//end of checkAdd()
+
 	private static boolean checkDelete(String cmd){
 		boolean valid = false;
 		Write("Checking if DELETE command is valid...");
@@ -174,19 +174,26 @@ public class Client
 
 	private static void end(){
 		try {
-			os.close();
-			is.close();
+			sender.close();
+			listener.close();
 			clientSocket.close();   	
 		 } catch(Exception e){
 			 //Do nothing
 		 }
-	}
-	private static boolean quit(){ return true;}//end of quit()
-	private static void shutdown(){}//end of shutdown()
+	}//end of end()
+
+	private static boolean quit(){ 
+		return true;
+	}//end of quit()
+
+	private static void shutdown(){
+		//
+	}//end of shutdown()
 
 	private static void Write(String msg){
 		System.out.println(msg);
 	}
+
 	private static String ReadInput(){
 		String input = "";
 		try{
