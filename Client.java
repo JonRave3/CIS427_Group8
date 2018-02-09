@@ -66,12 +66,13 @@ public class Client
 		boolean end = false;
 		while(end != true){
 			try {
-				String userInput;
-				while ((userInput = ReadInput()) != null)
-				{
+				String userInput = ReadInput();
+
+				Write("Received input from user: " + userInput);
 					if(userInput.contains("ADD")) {
 						//ADD FNAME(8) LNAME(8) PHONE(12)\n
 						if(checkAdd(userInput)){
+							Write("ADD cmd is valid!");
 							sendCommand(userInput);
 							getResponse();
 						} else {
@@ -81,6 +82,7 @@ public class Client
 			
 					else if(userInput.contains("DELETE")) {
 						if(checkDelete(userInput)){
+							Write("DELETE cmd is valid!");
 							sendCommand(userInput);
 							getResponse();
 						} else {
@@ -102,8 +104,6 @@ public class Client
 						end();
 						end = true;
 					}// END SHUTDOWN
-					
-				}// END WHILE
 			} 
 			catch (Exception e) 
 			{
@@ -116,6 +116,7 @@ public class Client
 
 	}//end of run()
 	private static boolean sendCommand(String validCmd) {
+		Write("Sending cmd to server.");
 		try {
 			bw.write(validCmd);
 			return true;
@@ -137,6 +138,7 @@ public class Client
 	}//end of getResponse()
 
 	private static boolean checkAdd(String cmd){
+		Write("checking if ADD command is valid...");
 		boolean valid = false;
 		String[] args = cmd.split("\\s+");
 		//arg[0] == ADD
@@ -155,6 +157,7 @@ public class Client
 	}//end of checkAdd()
 	private static boolean checkDelete(String cmd){
 		boolean valid = false;
+		Write("Checking if DELETE command is valid...");
 		String[] args = cmd.split("\\s+");
 		if(args[0].equalsIgnoreCase("DELETE")){
 			if(args.length == 2 && args[1] != null && args[1].length() == 4) {
