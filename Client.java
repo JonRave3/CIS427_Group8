@@ -23,12 +23,13 @@ public class Client
 		{
 			Write("Initialized Client!");
 			run();
-			userInput = ReadInput();
+			Write("Client no longer connected to server. Press any key to exit.");
 		} else {
-			Write("Unable to initialize client. Exiting...");
-			userInput = ReadInput();	
-			System.exit(1);
+			Write("Unable to initialize client. Press any key to exit.");
 		}
+		userInput = ReadInput();	
+		System.exit(1);
+
 	}//end of main()
 
 	private static boolean init(String ip) {
@@ -38,11 +39,11 @@ public class Client
 		try 
 		{
 			// Try to open a socket 
-			Write("Attempting to connect to server socket...");
+			//Write("Attempting to connect to server socket...");
 			//clientSocket = new Socket(ip, SERVER_PORT);
 			clientSocket = new Socket("127.0.0.1", SERVER_PORT);
 			// Try to open input and output streams
-			Write("Attempting to get input and output streams...");
+			//Write("Attempting to get input and output streams...");
 			listener = new BufferedReader (new InputStreamReader(clientSocket.getInputStream()));
 			sender = new PrintStream(clientSocket.getOutputStream());
 			status = true;
@@ -63,15 +64,17 @@ public class Client
 		while(end != true){
 
 			try {
+				CommandBlock();
 				String userInput = ReadInput();
 
-				Write("Received input from user: " + userInput);
+				//Write("Received input from user: " + userInput);
 				if(userInput.toUpperCase().contains("ADD")) {
 					//ADD FNAME(8) LNAME(8) PHONE(12)\n
 					if(checkAdd(userInput)){
-						Write("ADD cmd is valid!");
+						//Write("ADD cmd is valid!");
 						if(sendCommand(userInput)){
 							getResponse();
+							//Write("Done Getting response from server...");
 						}
 					} else {
 						Write("Invalid Add command. Please try again.");
@@ -79,14 +82,13 @@ public class Client
 				}//END ADD
 				else if(userInput.toUpperCase().contains("DELETE")) {
 					if(checkDelete(userInput)){
-						Write("DELETE cmd is valid!");
+						//Write("DELETE cmd is valid!");
 						if(sendCommand(userInput)){
 							getResponse();
 						}
 					} else {
 						Write("Invalid Delete command. Please try again");
 					}
-					
 				}//END DELETE
 				else if(userInput.toUpperCase().equalsIgnoreCase("LIST")) {
 					if(sendCommand(userInput)){
@@ -94,13 +96,17 @@ public class Client
 					}
 				}// END LIST
 				else if(userInput.toUpperCase().equalsIgnoreCase("QUIT")) {
-					end();
-					end = true;
+					if(sendCommand(userInput)){
+						end();
+						end = true;
+					}
 				}//END QUIT
 				else if(userInput.toUpperCase().equalsIgnoreCase("SHUTDOWN")) {
-					sendCommand(userInput);
-					end();
-					end = true;
+					if(sendCommand(userInput)){
+						getResponse();
+						end();
+						end = true;
+					}
 				}// END SHUTDOWN
 			} 
 			catch (Exception e) 
@@ -113,7 +119,7 @@ public class Client
 	}//end of run()
 
 	private static boolean sendCommand(String validCmd) {
-		Write("Sending cmd to server.");
+		//Write("Sending cmd to server.");
 		try {
 			sender.println(validCmd);
 			return true;
@@ -124,12 +130,17 @@ public class Client
 	}//end of sendCommand()
 
 	private static void getResponse(){
-		Write("Awaiting response from server...");
+		//Write("Awaiting response from server...");
 		String responseLine = "";
 		try{
-			while((responseLine = listener.readLine()) != null){
+			do{
+				responseLine = listener.readLine();
+				if(responseLine.equalsIgnoreCase("ENDTX")){
+					break;
+				}
 				Write(responseLine);
 			}
+			while(true);
 		} catch(Exception e){
 
 		}
@@ -137,7 +148,7 @@ public class Client
 	}//end of getResponse()
 
 	private static boolean checkAdd(String cmd){
-		Write("checking if ADD command is valid...");
+		//Write("checking if ADD command is valid...");
 		boolean valid = false;
 		String[] args = cmd.split("\\s+");
 		//arg[0] == ADD
@@ -157,7 +168,7 @@ public class Client
 
 	private static boolean checkDelete(String cmd){
 		boolean valid = false;
-		Write("Checking if DELETE command is valid...");
+		//Write("Checking if DELETE command is valid...");
 		String[] args = cmd.split("\\s+");
 		if(args[0].equalsIgnoreCase("DELETE")){
 			if(args.length == 2 && args[1] != null && args[1].length() == 4) {
@@ -182,14 +193,6 @@ public class Client
 		 }
 	}//end of end()
 
-	private static boolean quit(){ 
-		return true;
-	}//end of quit()
-
-	private static void shutdown(){
-		//
-	}//end of shutdown()
-
 	private static void Write(String msg){
 		System.out.println(msg);
 	}
@@ -202,5 +205,15 @@ public class Client
 
 		}
 		return input; 
+	}
+
+	private static void CommandBlock(){
+		Write("Enter a command: ");
+		Write("- ADD [FirstName] [LastName] [Phone]");
+		Write("- DELETE [RecordId]");
+		Write("- LIST");
+		Write("- QUIT");
+		Write("- SHUTDOWN");
+		Write("> ");
 	}
 }

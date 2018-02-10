@@ -72,11 +72,9 @@ public class Server {
     }//end of FindMaxRecodId()
    
     private static void ReadDataFromFile(){
-        Write("Attempting to retrieve records from file...");
         //get each line from the file
         BufferedReader bReader = new BufferedReader(fReader);
         if (bReader != null) {
-            Write("data file found!");
             try {
                 String ln = null;
                 while((ln = bReader.readLine()) != null){
@@ -111,20 +109,19 @@ public class Server {
         
         while(true){
             try {
-                Write("Waiting for a connection from client(s)...");
-                if(client == null || !client.isConnected()) {
+                if(client == null) {
+                    Write("Waiting for a connection from client(s)...");
                     client = server.accept();
                     reader = new BufferedReader(
                         new InputStreamReader(client.getInputStream())
                     );
                     sender = new PrintStream(client.getOutputStream());
                 }
-                else if(!client.isClosed()){
+                else if(!client.isOutputShutdown() && !client.isInputShutdown()){
                     
-                    Write("Connected to client! Waiting for commands!");
+                    Write("Connected to client! Waiting for commands...");
                     while((line = reader.readLine()) != null){
 
-                        Write("Received request from client: " + line);
                         String cmds[] = line.split("\\s+");
                         switch(cmds[0].toUpperCase()){
                             case "ADD":  
@@ -136,8 +133,10 @@ public class Server {
                             case "LIST":
                                 List();
                                 break;
+                            case "QUIT":
+                                Quit();
+                                break;
                             case "SHUTDOWN": 
-                                Respond("Shutting down the server");
                                 ShutDown(); 
                                 break;
                             default: break;
@@ -145,24 +144,15 @@ public class Server {
                     }
                 }
             } catch (Exception e) {
-                System.err.println("An unexpected error has occurred.");
+                if(client != null && (!client.isConnected() || !client.isClosed())){
+                    client = null;
+                } else if (server.isClosed()) {
+                    return;
+                }
             } 
         }
         
     }//end of Run()
-
-    private static void ShutDown() {
-        //output list to file
-        WriteDataToFile();
-        //close connections
-        try{
-            sender.close();
-            reader.close();
-            server.close();               
-        } catch (Exception e) {
-            System.err.println("Ayyy you fucked up!");
-        }
-    }//end of ShutDown()
 
     private static void Add(String fname, String lname, String phone){
         Write("Adding new record.");
@@ -173,23 +163,73 @@ public class Server {
         r._phone = phone;
         if(!list.contains(r)){
             list.add(r);
-            Respond("200 OK");        
+            Write("Added new record");
+            Respond("200 OK");
+            EndTx();        
         }
         else {
+            Write("Unable to add new record");
             Respond("400 BAD REQUEST");
+            EndTx();
         }
         //sends a response to the Client
     }//end of Add()
 
     private static void Delete(String id) {
+        try{
+            int rid = Integer.parseInt(id);
+            if(list.removeIf(x -> x._recordId == rid)){
+                Respond("200 OK");
+                EndTx();
+                FindMaxRecordId();
+            } else {
+                Respond("400 BAD REQUEST");
+                EndTx();
+            }
+        } catch(Exception e){
+            Respond("500 INTERNAL SERVER ERROR");
+            EndTx();
+        }
         //find the record in the list
         //remove the record from the list
-        //send a response to client
+        
     }//end of Delete()
 
     private static void List() {
         //send each record back the client as a response
+        for(Record r : list){
+            Respond(r.ToString());
+        }
+        EndTx();
     }//end of List()
+
+    private static void Quit(){
+        //close connection with client
+        try{
+            reader.close();
+            sender.close();
+            client.close();
+        } catch (Exception e){
+            reader = null;
+            sender = null;
+        }
+        client = null;
+        
+    }
+
+    private static void ShutDown() {
+        //output list to file
+        Respond("Shutting down the server");
+        EndTx();
+        WriteDataToFile();
+        //close all connections
+        try{
+            Quit();
+            server.close();               
+        } catch (Exception e) {
+            System.err.println("Ayyy you fucked up!");
+        }
+    }//end of ShutDown()
 
     private static class Record {
         public String _firstname, _lastname, _phone;
@@ -213,4 +253,7 @@ public class Server {
     private static void Respond(String msg) {
         sender.println(msg);
     }//end of Respond()
+    private static void EndTx(){
+        sender.println("ENDTX");
+    }
 }
