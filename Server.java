@@ -19,6 +19,7 @@ public class Server {
     private static final String dataFile = "data.txt";
     private static int maxRecordId;
     private static FileReader fReader;
+    private static FileWriter fWriter;
     private static ServerSocket server = null;//
     private static String line;
     private static BufferedReader reader;
@@ -44,6 +45,7 @@ public class Server {
             list = new ArrayList<Record>();
             fReader = new FileReader(dataFile);
             ReadDataFromFile();
+            fWriter = new FileWriter(dataFile);
             server = new ServerSocket(SERVER_PORT);
             return true; 
             
@@ -101,8 +103,22 @@ public class Server {
 
     private static void WriteDataToFile(){
         //open the File connection
-        //overwrite the file
-        //close the file connection
+        BufferedWriter bWriter = new BufferedWriter(fWriter);
+        if(bWriter != null){
+            try{
+                //overwrite the file
+                for(Record r : list){
+                    fWriter.write(r.forFile());
+                }
+                //close the file connection
+                fWriter.close();
+            } catch(Exception e){
+                Write("An error occurred writing to file: " + e.toString());
+            }
+        } else {
+            Write("Data file not found!");
+        }
+        
     }//end of WriteDataToFile() 
 
     private static void Run(){
@@ -121,7 +137,7 @@ public class Server {
                     
                     Write("Connected to client! Waiting for commands...");
                     while((line = reader.readLine()) != null){
-
+                        //Split the string into tokens, tokens are validated by clients
                         String cmds[] = line.split("\\s+");
                         switch(cmds[0].toUpperCase()){
                             case "ADD":  
@@ -139,7 +155,9 @@ public class Server {
                             case "SHUTDOWN": 
                                 ShutDown(); 
                                 break;
-                            default: break;
+                            default: 
+                                Respond("300 INVALID COMMAND");
+                                break;
                         }
                     }
                 }
@@ -150,8 +168,7 @@ public class Server {
                     return;
                 }
             } 
-        }
-        
+        }  
     }//end of Run()
 
     private static void Add(String fname, String lname, String phone){
@@ -197,6 +214,8 @@ public class Server {
 
     private static void List() {
         //send each record back the client as a response
+        Respond("200 OK");
+        Respond("The list of records in the book:");
         for(Record r : list){
             Respond(r.ToString());
         }
@@ -218,9 +237,10 @@ public class Server {
     }
 
     private static void ShutDown() {
-        //output list to file
-        Respond("Shutting down the server");
+        
+        Respond("200 OK");
         EndTx();
+        //output list to file
         WriteDataToFile();
         //close all connections
         try{
@@ -243,6 +263,9 @@ public class Server {
         }
         public String ToString(){
             return String.format("%d\t%s %s\t%s", getRecordId(), _firstname, _lastname, _phone);
+        }
+        public String forFile(){
+            return String.format("%d %s %s %s\n", getRecordId(), _firstname, _lastname, _phone);
         }
     }//end of Record class
 

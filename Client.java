@@ -108,6 +108,9 @@ public class Client
 						end = true;
 					}
 				}// END SHUTDOWN
+				else {
+					Write("Invalid command. Please try again.");
+				}
 			} 
 			catch (Exception e) 
 			{
