@@ -8,28 +8,28 @@
 #Installation
 
 for Windows:
-1.) ensure that the java compiler is mapped as an environment variable
-2.) in windows command prompt or powershell, navigate to folder ravelo_j_p1 and run the command:
+- 1.) ensure that the java compiler is mapped as an environment variable
+- 2.) in windows command prompt or powershell, navigate to folder ravelo_j_p1 and run the command:
 * "javac Server.java"
 * "javac Client.java"
 
 for Unix/iOS:
-1.) In the terminal, navigate to the folder ravelo_j_p1
-2.) run Makefile in the folder containing Server.java and Client.java or enter the commands "javac Server.java" and "javac Client.java"
+- 1.) In the terminal, navigate to the folder ravelo_j_p1
+- 2.) run Makefile in the folder containing Server.java and Client.java or enter the commands "javac Server.java" and "javac Client.java"
 
 ### Starting
 
 for Windows:
-1.) ensure that the java JVM is mapped as an environment variable
-2.) in windows commmand prompt or powershell, navigate to the folder "ravelo_j_p1" and run the commands:
+- 1.) ensure that the java JVM is mapped as an environment variable
+- 2.) in windows commmand prompt or powershell, navigate to the folder "ravelo_j_p1" and run the commands:
 * "java Server"
 3.) starting anothter instance of command prompt or powershell, and in the same folder, run the commands:
 * "java Client [ip_address]", it is recommended to use "127.0.0.1" (localhost)
 
 for Unix/Linux
-1.) in the Terminal, navigate to the folder ravelo_j_p1
-2.) start the server by entering the commands "java Server"
-3.) in a new Terminal in the same folder, start the client by enter the commands "java Client [ip_address]"; it is recommended to use "127.0.0.1" (localhost)
+- 1.) in the Terminal, navigate to the folder ravelo_j_p1
+- 2.) start the server by entering the commands "java Server"
+- 3.) in a new Terminal in the same folder, start the client by enter the commands "java Client [ip_address]"; it is recommended to use "127.0.0.1" (localhost)
 
 ### Known Bug/Issues
 - The server is mapped to port 6833 and may not initialize if the port is already in use.
