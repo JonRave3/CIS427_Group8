@@ -6,6 +6,7 @@
 - A simple client/server project that allows the user to input basic information in the client which is sent and processed by the server
 
 #Installation
+
 for Windows:
 - ensure that the java compiler is mapped as an environment variable
 - in windows command prompt or powershell, navigate to folder ravelo_j_p1 and run the command:
@@ -16,7 +17,8 @@ for Unix/iOS:
 - In the terminal, navigate to the folder ravelo_j_p1
 - run Makefile in the folder containing Server.java and Client.java or enter the commands "javac Server.java" and "javac Client.java"
 
-#Starting
+### Starting
+
 for Windows:
 - ensure that the java JVM is mapped as an environment variable
 - in windows commmand prompt or powershell, navigate to the folder "ravelo_j_p1" and run the commands:
@@ -29,7 +31,7 @@ for Unix/Linux
 - start the server by entering the commands "java Server"
 - in a new Terminal in the same folder, start the client by enter the commands "java Client [ip_address]"; it is recommended to use "127.0.0.1" (localhost)
 
-#Known Bug/Issues
+### Known Bug/Issues
 - Unable to start server: The server is mapped to port 6833 and may not initialize if the port is already in use.
 
 #Client Commands: 
