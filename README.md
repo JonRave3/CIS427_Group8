@@ -32,7 +32,7 @@ for Unix/Linux
 #Known Bug/Issues
 - Unable to start server: The server is mapped to port 6833 and may not initialize if the port is already in use.
 
-#Client Commands:
+#Client Commands: 
 * All commands are case-insensitive
 
 "ADD" - allows the user to add a new record on the server if it doesn't already exist
@@ -43,10 +43,10 @@ ADD FirstName LastName 123-123-1234
 
 "DELETE - allows the user to delete a record from the server if it exists by specifying the 4-digit record ID
 e.g. 
-DELETE 1234
-200 OK                        //if record was removed from server
-400 BAD REQUEST              //if the record does not exist
-500 INTERNAL SERVER ERROR    //if the recordId is invalid
++ DELETE 1234
++ 200 OK                        //if record was removed from server
++ 400 BAD REQUEST              //if the record does not exist
++ 500 INTERNAL SERVER ERROR    //if the recordId is invalid
 
 "LIST" - allows user to view all records stored on server, command is parameterless
 e.g. 
