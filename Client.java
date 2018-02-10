@@ -40,8 +40,8 @@ public class Client
 		{
 			// Try to open a socket 
 			//Write("Attempting to connect to server socket...");
-			//clientSocket = new Socket(ip, SERVER_PORT);
-			clientSocket = new Socket("127.0.0.1", SERVER_PORT);
+			clientSocket = new Socket(ip, SERVER_PORT);
+			//clientSocket = new Socket("127.0.0.1", SERVER_PORT);
 			// Try to open input and output streams
 			//Write("Attempting to get input and output streams...");
 			listener = new BufferedReader (new InputStreamReader(clientSocket.getInputStream()));
