@@ -36,35 +36,35 @@ for Unix/Linux
 * All commands are case-insensitive
 
 "ADD" - allows the user to add a new record on the server if it doesn't already exist
-e.g. 
-ADD FirstName LastName 123-123-1234 
++ e.g. 
++ ADD FirstName LastName 123-123-1234 
 - 200 OK              //Successfully able to add the record
 - 400 BAD REQUEST     //Unable to add a duplicate entry
 
 "DELETE - allows the user to delete a record from the server if it exists by specifying the 4-digit record ID
-e.g. 
++ e.g. 
 + DELETE 1234
 + 200 OK                        //if record was removed from server
 + 400 BAD REQUEST              //if the record does not exist
 + 500 INTERNAL SERVER ERROR    //if the recordId is invalid
 
 "LIST" - allows user to view all records stored on server, command is parameterless
-e.g. 
-LIST
-1001 Fname1 Lname1 123-123-1230
-1002 Fname2 Lname2 123-123-1231
-1003 Fname3 Lanme3 123-123-1232
-//nothing if empty
++ e.g. 
++ LIST
++ 1001 Fname1 Lname1 123-123-1230
++ 1002 Fname2 Lname2 123-123-1231
++ 1003 Fname3 Lanme3 123-123-1232
++ //nothing if empty
 
 "QUIT" - close connection with the server, command is parameterless
-e.g.
-QUIT
-"Press any key to close the application..."
++ e.g.
++ QUIT
++ "Press any key to close the application..."
 
 "SHUTDOWN" - allows the user to remotely shutdown the server and closes the current connection
-e.g.
-SHUTDOWN
-200 OK
-"Press any key to close the application"
++ e.g.
++ SHUTDOWN
++ 200 OK
++ "Press any key to close the application"
  
 
