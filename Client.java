@@ -18,6 +18,7 @@ public class Client
     {
 		String userInput = null;
 		String serverInput = null;
+		
 		//Check the number of command line parameters
 		if (commands.length > 0 && init(commands[0]))
 		{
@@ -90,6 +91,35 @@ public class Client
 						Write("Invalid Delete command. Please try again");
 					}
 				}//END DELETE
+				else if(userInput.toUpperCase().contains("LOGIN")) {
+					if(checkLogin(userInput)){
+						if(sendCommand(userInput)){
+							getResponse();
+						}
+					} else {
+						Write("Invalid LOGIN command. Please try again.");
+					}
+				}//END LOGIN
+				else if(userInput.toUpperCase().contains("LOOK")) {
+					if(checkLook(userInput)){
+						if(sendCommand(userInput)){
+							getResponse();
+						}
+					} else {
+						Write("Invalid LOOK command. Please try again.");
+					}
+					
+				}//END LOOK
+				else if(userInput.toUpperCase().equalsIgnoreCase("LOGOUT")) {
+					if(sendCommand(userInput)){
+						getResponse();
+					}
+				}//END LOGOUT
+				else if(userInput.toUpperCase().equalsIgnoreCase("WHO")) {
+					if(sendCommand(userInput)){
+						getResponse();
+					}
+				}//END WHO
 				else if(userInput.toUpperCase().equalsIgnoreCase("LIST")) {
 					if(sendCommand(userInput)){
 						getResponse();
@@ -140,7 +170,7 @@ public class Client
 				responseLine = listener.readLine();
 				if(responseLine.equalsIgnoreCase("ENDTX")){
 					break;
-				}
+				} 
 				Write(responseLine);
 			}
 			while(true);
@@ -149,6 +179,40 @@ public class Client
 		}
 		
 	}//end of getResponse()
+	
+	///TODO
+	private static boolean checkLogin(String cmd){
+		//Write("checking if ADD command is valid...");
+		boolean valid = false;
+		String[] args = cmd.split("\\s+");
+		//arg[0] == ADD
+		if(args[0].equalsIgnoreCase("LOGIN"))
+		if(args.length == 3 && args[1] != null && args[2] != null){
+			String username = args[1];
+			String password = args[2];
+			if(username.length() > 0 && password.length() > 0) {
+				valid = true;
+			}
+		}
+		return valid;
+	}//end of checkLogin()
+
+	///TODO
+	private static boolean checkLook(String cmd){
+		//Write("checking if ADD command is valid...");
+		boolean valid = false;
+		String[] args = cmd.split("\\s+");
+		//arg[0] == ADD
+		if(args[0].equalsIgnoreCase("LOOK"))
+		if(args.length == 3 && args[1] != null && args[2] != null){
+			String searchBy = args[1];
+			String param = args[2];
+			if(searchBy.length() == 1 && param.length() > 0) {
+				valid = true;
+			}
+		}
+		return valid;
+	}//end of checkLook()
 
 	private static boolean checkAdd(String cmd){
 		//Write("checking if ADD command is valid...");
@@ -212,6 +276,10 @@ public class Client
 
 	private static void CommandBlock(){
 		Write("Enter a command: ");
+		Write("- LOGIN [Username] [Password]");
+		Write("- LOGOUT");
+		Write("- WHO");
+		Write("- LOOK [Number] [Name]");
 		Write("- ADD [FirstName] [LastName] [Phone]");
 		Write("- DELETE [RecordId]");
 		Write("- LIST");

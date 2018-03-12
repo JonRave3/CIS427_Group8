@@ -1,6 +1,6 @@
 /*
 Jonnathen Ravelo, Ayesha Saleem
-CIS427 Project1
+CIS427 Project2
 */
 
 import java.net.*;
@@ -9,23 +9,22 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.io.*;
 import java.util.*;
+import java.lang.Thread;
 
 
 public class Server {
 
     private static final int SERVER_PORT = 6833;
-    private static final int CLIENT_PORT = 7900;
     private static ArrayList<Record> list;
     private static final String dataFile = "data.txt";
+    private static final String usersFile = "users.txt";
     private static int maxRecordId;
-    private static FileReader fReader;
+    private static FileReader dataFileReader, userFileReader;
     private static FileWriter fWriter;
-    private static ServerSocket server = null;//
-    private static String line;
-    private static BufferedReader reader;
-    private static PrintStream sender;
-    private static Socket client=  null;
-
+    private static ServerSocket server = null
+    private static Socket client = null;
+    private static ArrayList<User> users;
+    
 
     public static void main(String cmds[]){
         Write("heyo! We started!");
@@ -43,9 +42,14 @@ public class Server {
         try{    
             //read the file into memory
             list = new ArrayList<Record>();
-            fReader = new FileReader(dataFile);
+            dataFileReader = new FileReader(dataFile);
             ReadDataFromFile();
+            //read the user list into memory
+            users = new ArrayList<User>();
+            userFileReader = new FileReader(usersFile);
+            ReadUsersFromFile();
             fWriter = new FileWriter(dataFile);
+            //start the server
             server = new ServerSocket(SERVER_PORT);
             return true; 
             
@@ -56,6 +60,81 @@ public class Server {
         }
     }//end of Init()
 
+    private static void Run(){
+        
+        while(true){
+            try {
+                if(client == null) {
+                    Write("Waiting for a connection from client(s)...");
+                    client = server.accept();
+                    ChildThread cThread = new ChildThread(client);
+                    cThread.start();
+                }
+                else if(!client.isOutputShutdown() && !client.isInputShutdown()){
+                    
+                    Write("Connected to client! Waiting for commands...");
+                    while((line = reader.readLine()) != null){
+                        //Split the string into tokens, tokens are validated by clients
+                        Write("Recieved msg from client: " + line);
+                        String cmds[] = line.split("\\s+");
+                        switch(cmds[0].toUpperCase()){
+                            case "ADD":  
+                                if(authorizedToEdit(client)){
+                                    Add(cmds[1], cmds[2], cmds[3]);
+                                } else  {
+                                    Respond("402 User not allowed to execute this command");
+                                    EndTx();
+                                }
+                                break;
+                            case "DELETE": 
+                                if(authorizedToEdit(client)){
+                                    Delete(cmds[1]);
+                                } else {
+                                    Respond("402 User not allowed to execute this command");
+                                    EndTx();
+                                }
+                                break;
+                            case "LOGIN":
+                                Login(cmds[1], cmds[2], client);
+                                break;
+                            case "LOGOUT": 
+                                Logout(client);
+                                break;
+                            case "WHO": 
+                                Who();
+                                break;
+                            case "LOOK": 
+                                Look(cmds[1], cmds[2]);
+                                break;
+                            case "LIST":
+                                List();
+                                break;
+                            case "QUIT":
+                                Quit();
+                                break;
+                            case "SHUTDOWN":
+                                if(authorizedToShutDown(client)){
+                                    ShutDown(); 
+                                } else {
+                                    Respond("402 User not allowed to execute this command");
+                                    EndTx();
+                                }
+                                break;
+                            default: 
+                                Respond("300 INVALID COMMAND");
+                                break;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                if(client != null && (!client.isConnected() || !client.isClosed())){
+                    client = null;
+                } else if (server.isClosed()) {
+                    return;
+                }
+            } 
+        }  
+    }//end of Run()
     private static int FindMaxRecordId(){
         //if the list is not empty
         if(list != null && !list.isEmpty()){
@@ -75,7 +154,7 @@ public class Server {
    
     private static void ReadDataFromFile(){
         //get each line from the file
-        BufferedReader bReader = new BufferedReader(fReader);
+        BufferedReader bReader = new BufferedReader(dataFileReader);
         if (bReader != null) {
             try {
                 String ln = null;
@@ -101,6 +180,26 @@ public class Server {
         maxRecordId = FindMaxRecordId();
     }//end of ReadDataFromFile()
 
+    private static void ReadUsersFromFile() {
+        BufferedReader bReader = new BufferedReader(userFileReader);
+        if (bReader != null) {
+            try {
+                String ln = null;
+                while((ln = bReader.readLine()) != null){
+                    //parse each line for tokenss
+                    String tkns[] = ln.split("\\s+");
+                    //store in list
+                    User nu = new User(tkns[0], tkns[1]);
+                    users.add(nu);
+                }
+            } catch (IOException ioe){
+                Write("Error reading from user file!");
+            }
+        } else {
+            Write("User file not found!");
+        }
+    }//end of ReadUsersFromFile()
+    
     private static void WriteDataToFile(){
         //open the File connection
         BufferedWriter bWriter = new BufferedWriter(fWriter);
@@ -121,55 +220,7 @@ public class Server {
         
     }//end of WriteDataToFile() 
 
-    private static void Run(){
-        
-        while(true){
-            try {
-                if(client == null) {
-                    Write("Waiting for a connection from client(s)...");
-                    client = server.accept();
-                    reader = new BufferedReader(
-                        new InputStreamReader(client.getInputStream())
-                    );
-                    sender = new PrintStream(client.getOutputStream());
-                }
-                else if(!client.isOutputShutdown() && !client.isInputShutdown()){
-                    
-                    Write("Connected to client! Waiting for commands...");
-                    while((line = reader.readLine()) != null){
-                        //Split the string into tokens, tokens are validated by clients
-                        String cmds[] = line.split("\\s+");
-                        switch(cmds[0].toUpperCase()){
-                            case "ADD":  
-                                Add(cmds[1], cmds[2], cmds[3]);
-                                break;
-                            case "DELETE": 
-                                Delete(cmds[1]);
-                                break;
-                            case "LIST":
-                                List();
-                                break;
-                            case "QUIT":
-                                Quit();
-                                break;
-                            case "SHUTDOWN": 
-                                ShutDown(); 
-                                break;
-                            default: 
-                                Respond("300 INVALID COMMAND");
-                                break;
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                if(client != null && (!client.isConnected() || !client.isClosed())){
-                    client = null;
-                } else if (server.isClosed()) {
-                    return;
-                }
-            } 
-        }  
-    }//end of Run()
+    
 
     private static void Add(String fname, String lname, String phone){
         Write("Adding new record.");
@@ -212,6 +263,101 @@ public class Server {
         
     }//end of Delete()
 
+    private static void Login(String username, String password, Socket conn_client) {
+        Write("Attempting to locate users credentials...");
+        int id = findUsersByUnPw(username, password);
+        if(id > -1) {
+            
+            User u = users.get(id);
+            if(u != null){
+                //check if user is already logged in somehwere
+                if(u._client != null && !u._client.equals(conn_client)) {
+                    Write("User: " + username + " is logged in elsewhere");
+                    Respond("400 User is already logged in");
+                    EndTx();
+                } else if (u._client != null && u._client.equals(conn_client)) {
+                    Write("User: " + username + " is logged in to the current client");
+                    Respond("400 User is already logged in");
+                    EndTx();
+                } else {
+                    Write("Registered users session");
+                    u._client = conn_client;
+                    Respond("200 OK");
+                    EndTx();
+                }        
+            } else {
+                Write("Error getting user from table");
+            }
+            
+        } else {
+            Respond("410 Wrong UserID or Password");
+            EndTx();
+        }
+        
+    }//end of Login()
+
+    private static void Logout(Socket conn_client) {
+        int id = findUserByConnection(conn_client);
+        users.get(id)._client = null;
+        Respond("200 OK");
+        EndTx();
+    }//end of Logout()
+
+    private static void Who(){
+        for(User u : users){
+            if(u._client != null) {
+                Respond(u.ToString());
+            }
+        }
+        EndTx();
+    }//end of Who()
+
+    private static void Look(String searchBy, String param){
+
+        ArrayList<Record> results = new ArrayList<Record>();
+
+        switch(searchBy){
+            case "1": //Search by firstname
+                for(Record r: list) {
+                    if(r._firstname.toUpperCase().contains(param.toUpperCase())){
+                        results.add(r);
+                    }
+                }
+                break;
+            case "2"://Search by lastname
+                for(Record r: list) {
+                    if(r._lastname.toUpperCase().contains(param.toUpperCase())){
+                        results.add(r);
+                    }
+                }
+                break;
+            case "3"://Search by phone number
+                for(Record r: list) {
+                    if(r._phone.toUpperCase().contains(param.toUpperCase())){
+                        results.add(r);
+                    }
+                }
+                break;
+            default:
+                results = null;
+                break;
+        }
+        
+        if(results != null && results.size() > 0) {
+            Respond("200 OK");
+            String recordsCount = "Found " + results.size() + " matches";  
+            Respond(recordsCount);
+            
+            for(Record r : results) {
+                Respond(r.ToString());
+            }
+            EndTx();
+        } else if (results == null){
+            Respond("404 Your search did not match any records");
+            EndTx();
+        }
+    }//end of Look()
+
     private static void List() {
         //send each record back the client as a response
         Respond("200 OK");
@@ -234,10 +380,9 @@ public class Server {
         }
         client = null;
         
-    }
+    }//end of Quit()
 
     private static void ShutDown() {
-        
         Respond("200 OK");
         EndTx();
         //output list to file
@@ -251,23 +396,43 @@ public class Server {
         }
     }//end of ShutDown()
 
-    private static class Record {
-        public String _firstname, _lastname, _phone;
-        private final int _recordId;
+    private static int findUsersByUnPw(String un, String pw){
+        for(User u : users){
+            if(u._username.compareTo(un) == 0 && u._password.compareTo(pw) == 0) {
+                return users.indexOf(u);
+            }
+        }
+        return -1;
+    }//end of findUsersByUnPw
 
-        public Record(int id) {
-            _recordId = id;
+    private static int findUserByConnection(Socket soc){
+        for(User u : users) {
+            if(u._client != null && u._client.equals(soc)){
+                return users.indexOf(u);
+            }
         }
-        public int getRecordId(){
-            return this._recordId;
+        return -1;
+    }//end of finduserByConnection();
+
+    private static boolean authorizedToEdit(Socket soc){
+        int id = findUserByConnection(soc);
+        if(id > -1) {
+            return true;
+        } 
+        return false;
+    }//end of authorizedToEdit()
+
+    private static boolean authorizedToShutDown(Socket soc) {
+        Write("Client " + soc.getInetAddress() + " is attempting to login!");
+        int id = findUserByConnection(soc);
+        if(id > -1) {
+            User u = users.get(id);
+            if(u._username.compareTo("root") == 0){
+                return true;
+            }
         }
-        public String ToString(){
-            return String.format("%d\t%s %s\t%s", getRecordId(), _firstname, _lastname, _phone);
-        }
-        public String forFile(){
-            return String.format("%d %s %s %s\n", getRecordId(), _firstname, _lastname, _phone);
-        }
-    }//end of Record class
+        return false;
+    }//end of authorizedToShutDown()
 
     private static void Write(String msg){
         System.out.println(msg);
@@ -276,7 +441,8 @@ public class Server {
     private static void Respond(String msg) {
         sender.println(msg);
     }//end of Respond()
+
     private static void EndTx(){
         sender.println("ENDTX");
-    }
+    }//end of EndTx()
 }
