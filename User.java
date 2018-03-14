@@ -1,3 +1,11 @@
+/*
+Jonnathen Ravelo, Ayesha Saleem
+CIS427 Project2
+*/
+
+import java.io.*;
+import java.net.*;
+
 public class User {
     public String _username, _password;
     public Socket _client;

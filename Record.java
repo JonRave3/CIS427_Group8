@@ -1,3 +1,8 @@
+/*
+Jonnathen Ravelo, Ayesha Saleem
+CIS427 Project2
+*/
+
 public class Record {
     public String _firstname, _lastname, _phone;
     private final int _recordId;

@@ -1,2 +1,1 @@
-javac Client.java
-javac Server.java
+javac Client.java Server.java

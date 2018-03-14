@@ -1,6 +1,7 @@
-/* Me
- * Client.java
- */
+/*
+Jonnathen Ravelo, Ayesha Saleem
+CIS427 Project2
+*/
 
 import java.io.*;
 import java.net.*;
@@ -10,7 +11,6 @@ public class Client
 	public static final int SERVER_PORT = 6833;
 	private static final int CLIENT_PORT = 7900;
 	public static Socket clientSocket;
-	public static BufferedReader listener;
 	public static PrintStream sender;
 	public static Console console;
 	
@@ -24,7 +24,7 @@ public class Client
 		{
 			Write("Initialized Client!");
 			run();
-			Write("Client no longer connected to server. Press any key to exit.");
+			Write("Press any key to exit.");
 		} else {
 			Write("Unable to initialize client. Press any key to exit.");
 		}
@@ -40,12 +40,8 @@ public class Client
 		try 
 		{
 			// Try to open a socket 
-			//Write("Attempting to connect to server socket...");
 			clientSocket = new Socket(ip, SERVER_PORT);
-			//clientSocket = new Socket("127.0.0.1", SERVER_PORT);
 			// Try to open input and output streams
-			//Write("Attempting to get input and output streams...");
-			listener = new BufferedReader (new InputStreamReader(clientSocket.getInputStream()));
 			sender = new PrintStream(clientSocket.getOutputStream());
 			status = true;
 		} 
@@ -62,93 +58,69 @@ public class Client
 	
 	private static void run(){
 		boolean end = false;
-		while(end != true){
+		//Start listening for Server messages...
+		ResponseThread rThread = new ResponseThread(clientSocket);
+		rThread.start();
+
+		while(!clientSocket.isClosed()){
 
 			try {
-				CommandBlock();
+				Write("Enter a command: ");
 				String userInput = ReadInput();
 
 				//Write("Received input from user: " + userInput);
 				if(userInput.toUpperCase().contains("ADD")) {
 					//ADD FNAME(8) LNAME(8) PHONE(12)\n
 					if(checkAdd(userInput)){
-						//Write("ADD cmd is valid!");
-						if(sendCommand(userInput)){
-							getResponse();
-							//Write("Done Getting response from server...");
-						}
+						sendCommand(userInput);
 					} else {
-						Write("Invalid Add command. Please try again.");
+						Write("Invalid Add command.");
 					}
 				}//END ADD
 				else if(userInput.toUpperCase().contains("DELETE")) {
 					if(checkDelete(userInput)){
-						//Write("DELETE cmd is valid!");
-						if(sendCommand(userInput)){
-							getResponse();
-						}
+						sendCommand(userInput);
 					} else {
-						Write("Invalid Delete command. Please try again");
+						Write("Invalid Delete command.");
 					}
 				}//END DELETE
 				else if(userInput.toUpperCase().contains("LOGIN")) {
 					if(checkLogin(userInput)){
-						if(sendCommand(userInput)){
-							getResponse();
-						}
+						sendCommand(userInput);
 					} else {
-						Write("Invalid LOGIN command. Please try again.");
+						Write("Invalid LOGIN command.");
 					}
 				}//END LOGIN
 				else if(userInput.toUpperCase().contains("LOOK")) {
 					if(checkLook(userInput)){
-						if(sendCommand(userInput)){
-							getResponse();
-						}
+						sendCommand(userInput);
 					} else {
-						Write("Invalid LOOK command. Please try again.");
+						Write("Invalid LOOK command.");
 					}
-					
 				}//END LOOK
-				else if(userInput.toUpperCase().equalsIgnoreCase("LOGOUT")) {
-					if(sendCommand(userInput)){
-						getResponse();
-					}
-				}//END LOGOUT
-				else if(userInput.toUpperCase().equalsIgnoreCase("WHO")) {
-					if(sendCommand(userInput)){
-						getResponse();
-					}
-				}//END WHO
-				else if(userInput.toUpperCase().equalsIgnoreCase("LIST")) {
-					if(sendCommand(userInput)){
-						getResponse();
-					}
-				}// END LIST
+				else if(userInput.toUpperCase().equalsIgnoreCase("LOGOUT") || 
+						userInput.toUpperCase().equalsIgnoreCase("WHO") || 
+						userInput.toUpperCase().equalsIgnoreCase("LIST") || 
+						userInput.toUpperCase().equalsIgnoreCase("SHUTDOWN")) {
+					sendCommand(userInput);
+				}//END LOGOUT, WHO, LIST, SHUTDOWN
 				else if(userInput.toUpperCase().equalsIgnoreCase("QUIT")) {
 					if(sendCommand(userInput)){
+						Thread.sleep(200);
 						end();
-						end = true;
 					}
 				}//END QUIT
-				else if(userInput.toUpperCase().equalsIgnoreCase("SHUTDOWN")) {
-					if(sendCommand(userInput)){
-						getResponse();
-						end();
-						end = true;
-					}
-				}// END SHUTDOWN
-				else {
+				else if(userInput != null && userInput.length() > 0){
 					Write("Invalid command. Please try again.");
 				}
+				Thread.sleep(200);			
 			} 
 			catch (Exception e) 
 			{
-				// Write("Exception:  " + e);
-				// end();
-				// end = true;
+
 			}
 		}//END WHILE
+		Write("Connection to server has terminated...");
 	}//end of run()
 
 	private static boolean sendCommand(String validCmd) {
@@ -162,24 +134,6 @@ public class Client
 		}
 	}//end of sendCommand()
 
-	private static void getResponse(){
-		//Write("Awaiting response from server...");
-		String responseLine = "";
-		try{
-			do{
-				responseLine = listener.readLine();
-				if(responseLine.equalsIgnoreCase("ENDTX")){
-					break;
-				} 
-				Write(responseLine);
-			}
-			while(true);
-		} catch(Exception e){
-
-		}
-		
-	}//end of getResponse()
-	
 	///TODO
 	private static boolean checkLogin(String cmd){
 		//Write("checking if ADD command is valid...");
@@ -250,14 +204,14 @@ public class Client
 		return valid;
 	}//end of checkDelete()
 
-	private static void end(){
+	private static boolean end(){
 		try {
 			sender.close();
-			listener.close();
-			clientSocket.close();   	
-		 } catch(Exception e){
+			clientSocket.close();
+		} catch(Exception e){
 			 //Do nothing
-		 }
+		}
+		return true;
 	}//end of end()
 
 	private static void Write(String msg){
@@ -274,17 +228,4 @@ public class Client
 		return input; 
 	}
 
-	private static void CommandBlock(){
-		Write("Enter a command: ");
-		Write("- LOGIN [Username] [Password]");
-		Write("- LOGOUT");
-		Write("- WHO");
-		Write("- LOOK [Number] [Name]");
-		Write("- ADD [FirstName] [LastName] [Phone]");
-		Write("- DELETE [RecordId]");
-		Write("- LIST");
-		Write("- QUIT");
-		Write("- SHUTDOWN");
-		Write("> ");
-	}
 }
