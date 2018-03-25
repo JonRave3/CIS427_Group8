@@ -1,0 +1,21 @@
+$dt = $(get-date -f MMddyyyy-hhmmss)
+ping -n 14 "www.alibaba.com" >> alibaba-$dt.ping
+ping -n 14 "www.amazon.com" >> amazon-$dt.ping
+ping -n 14 "www.google.com" >> google-$dt.ping
+ping -n 14 "www.facebook.com" >> facebook-$dt.ping
+ping -n 14 "store.steampowered.com" >> steam-$dt.ping
+ping -n 14 "www.reddit.com" >> reddit-$dt.ping
+ping -n 14 "www.ebay.com" >> ebay-$dt.ping
+ping -n 14 "www.github.com" >> github-$dt.ping
+ping -n 14 "www.spotify.com" >> spotify-$dt.ping
+ping -n 14 "www.vmware.com" >> vmware-$dt.ping
+tracert "www.alibaba.com" >> alibaba-$dt.tcrt
+tracert "www.amazon.com" >> amazon-$dt.tcrt
+tracert "www.google.com" >> google-$dt.tcrt
+tracert "www.facebook.com" >> facebook-$dt.tcrt
+tracert "store.steampowered.com" >> steam-$dt.tcrt
+tracert "www.ebay.com" >> ebay-$dt.tcrt
+tracert "www.reddit.com" >> reddit-$dt.tcrt
+tracert "www.github.com" >> github-$dt.tcrt
+tracert "www.spotify.com" >> spotify-$dt.tcrt
+tracert "www.vmware.com" >> vmware-$dt.tcrt
